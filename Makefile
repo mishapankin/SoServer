@@ -4,15 +4,17 @@ CFLAGS = -std=gnu11 -g -Wall
 C_FILES = $(wildcard src/*.c)
 H_FILES = $(wildcard src/*.h)
 
-all: prog
+TARGET = ./soserver
+
+all: $(TARGET)
 
 clean:
-	rm -r prog *.o
+	rm -rf $(TARGET) *.o
 
-run: prog
-	./prog
+run: $(TARGET)
+	$(TARGET)
 
-prog: $(C_FILES) $(H_FILES)
+$(TARGET): $(C_FILES) $(H_FILES)
 	$(CC) $(CFLAGS) $^ -o $@ $(LFLAGS)
 
 .PHONY: all clean run
