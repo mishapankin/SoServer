@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>
+        Index
+    </h1>
+    <h2 id = "number">
+        0
+    </h2>
+    <a href="file.html">file.html</a>
+    <script>
+        var num = document.getElementById("number");
+        let x = fetch("http://194.67.104.235");
+        x.then(t => t.text()).then(t => { num.innerHTML = t});
+    </script>
+</body>
+</html>
