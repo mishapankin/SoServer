@@ -18,6 +18,7 @@ enum HttpStatusCode
 {
     HTTP_OK = 200,
     HTTP_NOT_FOUND = 404,
+    HTTP_FORBIDDEN = 403,
 };
 
 enum { HTTP_PATH_LEN = 300 };
@@ -28,7 +29,7 @@ struct HttpRequest
     char path[HTTP_PATH_LEN];
 };
 
-struct HttpResponse
+struct HttpResponseHeader
 {
     enum HttpStatusCode code;
     enum HttpContentType content_type;
@@ -36,10 +37,13 @@ struct HttpResponse
 };
 
 int http_recv(int fd, struct HttpRequest *req);
-int http_resp(int fd, struct HttpResponse resp, char *content, int n);
+
+int http_send_header(int sock_fd, struct HttpResponseHeader resp);
+int http_send_content(int sock_fd, char *content, int n);
+int http_send_file(int sock_fd, int fd);
 
 int http_print_status(char *target, int n, enum HttpStatusCode code);
 int http_print_content_type(char *target, int n, enum HttpContentType type);
-int http_print_header(char *target, int n, struct HttpResponse resp);
+int http_print_header(char *target, int n, struct HttpResponseHeader resp);
 
 #endif

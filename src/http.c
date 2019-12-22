@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/socket.h>
 
 int
@@ -32,11 +33,16 @@ http_recv(int fd, struct HttpRequest *req)
 int
 http_print_status(char *target, int n, enum HttpStatusCode code)
 {
+    const char format_str[] = "HTTP/1.1 %d %s\r\n";
+
     if (code == HTTP_OK) {
-        return snprintf(target, n, "HTTP/1.1 %d OK\r\n", code);
+        return snprintf(target, n, format_str, code, "OK");
     }
     if (code == HTTP_NOT_FOUND) {
-        return snprintf(target, n, "HTTP/1.1 %d Not found\r\n", code);
+        return snprintf(target, n, format_str, code, "Not found");
+    }
+    if (code == HTTP_FORBIDDEN) {
+        return snprintf(target, n, format_str, code, "Forbidden");
     }
     return -1;
 }
@@ -54,7 +60,7 @@ http_print_content_type(char *target, int n, enum HttpContentType type)
 }
 
 int
-http_print_header(char *target, int n, struct HttpResponse resp)
+http_print_header(char *target, int n, struct HttpResponseHeader resp)
 {
     int pos = 0;
     pos += http_print_status(target + pos, n - pos, resp.code);
@@ -69,16 +75,31 @@ http_print_header(char *target, int n, struct HttpResponse resp)
 }
 
 int
-http_resp(int fd, struct HttpResponse resp, char *content, int n)
+http_send_header(int sock_fd, struct HttpResponseHeader resp)
 {
     enum { BUFF_SIZE = 1000 };
     char buff[BUFF_SIZE];
     int ln = http_print_header(buff, sizeof(buff), resp);
-    send(fd, buff, ln, 0);
+    return send(sock_fd, buff, ln, 0);
+}
 
+int
+http_send_content(int sock_fd, char *content, int n)
+{
     int pos = 0;
     while (pos < n) {
-        pos += send(fd, content, n - pos, 0);
+        pos += send(sock_fd, content, n - pos, 0);
+    }
+    return 0;
+}
+
+int
+http_send_file(int sock_fd, int fd)
+{
+    enum { BUFF_SIZE = 1000 };
+    char buff[BUFF_SIZE];
+    while (read(fd, buff, sizeof(buff)) > 0) {
+        http_send_content(sock_fd, buff, sizeof(buff));
     }
     return 0;
 }
